@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+ <meta charset="utf-8">
+<title>1 lab</title>
+ <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>  
+
+<!-- Моделирование графики -->
+<script type="text/javascript">
+  google.charts.load('current', {'packages':['corechart']});
+  google.charts.setOnLoadCallback(drawChart);
+  function drawChart(){
+    var q1 = 2; q2 = 0.5; q3 = 1.5;
+	var dx = 0;
+	var krit=0;
+	var integ = 0;
+    var t=0.1;
+    var T1=1,T2=3, k=1;
+    var g=1;
+    var dt=0.01;
+    var L=12;
+    var z1, z,z2, y2,y1;
+    var y,t_;
+//запаздывание
+    var i, j, ns, tau=0.3;
+    ns=tau/dt;
+      y=0;y1=0;y2=0;
+      z1=0; z=0;z2=0;
+      t_=0;
+    var A=new Array(['x', 'h(t)','g(t)', 'интеграл']); 
+    var mas=new Array(['y']);
+    var i=0;j=0; x_prev = 0;
+    while(t_<=L){
+      x=g-y;
+	  integ = integ + x*dt;
+	  dx = (x - x_prev)/dt;
+	  u = q1*x + q2*integ + q3*dx;
+      
+	  y1=z1
+          k1 = dt*((k/T1*u) - (y1/T1))
+	  k2 = dt*((k/T1*u) - 1/T1*(y1+k1/2))
+	  k3 = dt*((k/T1*u) - 1/T1*(y1+k2/2))
+	  k4 = dt*((k/T1*u) - 1/T1*(y1+k3))
+	  z1 = z1 + 1/6*(k1+2*k2+2*k3+k4)
+
+	  y2=z2
+	  m1 = dt*(1/T2*y1 - 1/T2*y2)
+	  m2 = dt*(1/T2*y1 - 1/T2*(y2+m1/2))
+	  m3 = dt*(1/T2*y1 - 1/T2*(y2+m2/2))
+	  m4 = dt*(1/T2*y1 - 1/T2*(y2+m3))
+	  z2 = z2 + 1/6*(m1 + 2*m2 + 2*m3 + m4)
+
+          i=i+1;
+          if(i>ns) 
+            {
+               if(j>=ns) j=0;
+               j=j+1;
+               y=mas[j];
+               mas[j]=y2;
+             }
+           else
+               {
+                   mas[i]=y2;
+                   y=0;
+                }
+      krit = krit + Math.abs(x)*dt;
+      x_prev = x;
+      A[i]=[t_,y,y2, krit];
+      t_=t_+dt; 
+	// i++;
+    } 
+    var data = google.visualization.arrayToDataTable(A);   
+    var options = {
+      title: 'Моделирование с ПИД-регулятором',
+      curveType: 'function',
+      hAxis: {
+          title: 'такты'
+        },
+      vAxis: {
+        title: 'значения объекта'
+      },
+      legend: { position: 'bottom' }
+    };
+
+    var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+    chart.draw(data, options);
+  }
+</script>
+<!-- Конец моделирования -->
+</head>
+<body>
+    <div class="conteiner">
+ <div id="curve_chart" style="width: 800px; height: 600px">      </div>
+     </div> <!-- conteiner end -->
+</body>
+</html>
